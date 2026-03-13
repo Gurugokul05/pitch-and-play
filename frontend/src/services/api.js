@@ -2,7 +2,11 @@ import axios from "axios";
 
 const normalizeApiBaseUrl = (url) => {
   const trimmed = (url || "").trim().replace(/\/+$/, "");
-  if (!trimmed) return "http://localhost:5000/api";
+  if (!trimmed) {
+    return import.meta.env.DEV
+      ? "http://localhost:5000/api"
+      : "https://pitch-and-play-backend.onrender.com/api";
+  }
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 

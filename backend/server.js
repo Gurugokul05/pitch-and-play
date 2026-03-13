@@ -90,12 +90,28 @@ const isAllowedDevOrigin = (origin) => {
   }
 };
 
+const isAllowedVercelOrigin = (origin) => {
+  try {
+    const parsedOrigin = new URL(origin);
+    return (
+      parsedOrigin.protocol === "https:" &&
+      parsedOrigin.hostname.endsWith(".vercel.app")
+    );
+  } catch {
+    return false;
+  }
+};
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow tools or same-origin requests without an Origin header.
     if (!origin) return callback(null, true);
 
-    if (corsOrigins.includes(origin) || isAllowedDevOrigin(origin)) {
+    if (
+      corsOrigins.includes(origin) ||
+      isAllowedDevOrigin(origin) ||
+      isAllowedVercelOrigin(origin)
+    ) {
       return callback(null, true);
     }
 
