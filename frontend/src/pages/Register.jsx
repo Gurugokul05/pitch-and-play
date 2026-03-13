@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,6 +7,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import Card from "../components/Card";
 import Navbar from "../components/Navbar";
+import api from "../services/api";
 import {
   FaUserAstronaut,
   FaTimes,
@@ -20,6 +21,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [registrationClosed, setRegistrationClosed] = useState(false);
   const [formData, setFormData] = useState({
     teamName: "",
     leader: {
@@ -35,8 +37,19 @@ const Register = () => {
     members: [],
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     document.title = "Register Your Team - Hackathon Platform";
+    api
+      .get("/settings")
+      .then((res) => {
+        if (res.data && res.data.registrationOpen === false) {
+          setRegistrationClosed(true);
+        }
+      })
+      .catch(() => {
+        // Settings fetch failed; allow registration attempt so the backend
+        // can return the authoritative open/closed status on submit.
+      });
   }, []);
 
   const addMember = () => {
@@ -126,11 +139,17 @@ const Register = () => {
         navigate("/login");
       });
     } catch (error) {
+      let errorMessage = "Check your details and try again.";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.request && !error.response) {
+        errorMessage =
+          "Unable to reach the server. Please check your connection and try again.";
+      }
       Swal.fire({
         icon: "error",
         title: "Registration Failed",
-        text:
-          error.response?.data?.message || "Check your details and try again.",
+        text: errorMessage,
         background: "rgba(20, 20, 25, 0.95)",
         color: "#fff",
       });
@@ -208,6 +227,25 @@ const Register = () => {
             </p>
           </motion.div>
         </div>
+
+        {registrationClosed && (
+          <div
+            style={{
+              background: "rgba(220, 53, 69, 0.15)",
+              border: "1px solid rgba(220, 53, 69, 0.4)",
+              borderRadius: "12px",
+              padding: "1.5rem 2rem",
+              marginBottom: "2rem",
+              textAlign: "center",
+              color: "#ff6b6b",
+              fontSize: "1.1rem",
+              letterSpacing: "1px",
+            }}
+          >
+            Registration is currently closed by the admin. Please check back
+            later.
+          </div>
+        )}
 
         <div
           style={{
