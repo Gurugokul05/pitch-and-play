@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base:process.env.VITE_BASE_PATH || "/",
   build: {
     // Optimize chunk size for better loading
     chunkSizeWarningLimit: 1000,
@@ -34,5 +35,6 @@ export default defineConfig({
   // Enable better tree-shaking
   optimizeDeps: {
     include: ["react", "react-dom", "react-router-dom", "axios"],
+
   },
 });
