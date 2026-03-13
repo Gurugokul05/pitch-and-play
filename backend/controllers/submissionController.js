@@ -4,10 +4,13 @@ const path = require("path");
 const Team = require("../models/Team");
 const SubmissionPortal = require("../models/SubmissionPortal");
 
+const normalizeSubmissionType = (submissionType) =>
+  submissionType === "link" ? "link" : "file";
+
 // @desc Create a new submission portal (Admin)
 exports.createPortal = async (req, res, next) => {
   try {
-    const { title, description, deadline, isActive } = req.body;
+    const { title, description, deadline, isActive, submissionType } = req.body;
     if (!title || !deadline) {
       return res
         .status(400)
@@ -20,6 +23,7 @@ exports.createPortal = async (req, res, next) => {
     const portal = await SubmissionPortal.create({
       title,
       description: description || "",
+      submissionType: normalizeSubmissionType(submissionType),
       deadline: parsedDeadline,
       isActive: isActive !== false,
     });
@@ -39,20 +43,27 @@ exports.getPortals = async (req, res, next) => {
   }
 };
 
-// @desc Submit link (Team)
+// @desc Submit link or file (Team)
 exports.submitLink = async (req, res, next) => {
-  const { portalId } = req.body;
+  const { portalId, link } = req.body;
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "Submission file is required" });
-    }
-
     const team = await Team.findById(req.user.id);
     if (!team) return res.status(404).json({ message: "Team not found" });
 
     // Check if portal exists and deadline hasn't passed
     const portal = await SubmissionPortal.findById(portalId);
     if (!portal) return res.status(404).json({ message: "Portal not found" });
+
+    const submissionType = normalizeSubmissionType(portal.submissionType);
+    const trimmedLink = typeof link === "string" ? link.trim() : "";
+
+    if (submissionType === "file" && !req.file) {
+      return res.status(400).json({ message: "Submission file is required" });
+    }
+
+    if (submissionType === "link" && !trimmedLink) {
+      return res.status(400).json({ message: "Submission link is required" });
+    }
 
     const now = new Date();
     if (now > portal.deadline) {
@@ -69,18 +80,29 @@ exports.submitLink = async (req, res, next) => {
         .status(403)
         .json({ message: "Submission already exists and is locked." });
     } else {
-      team.submissions.push({
+      const submissionPayload = {
         portalId,
-        fileUrl: `/uploads/submissions/${req.file.filename}`,
-        fileName: req.file.filename,
-        originalFileName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        fileSize: req.file.size,
-      });
+        link: submissionType === "link" ? trimmedLink : undefined,
+      };
+
+      if (submissionType === "file") {
+        submissionPayload.fileUrl = `/uploads/submissions/${req.file.filename}`;
+        submissionPayload.fileName = req.file.filename;
+        submissionPayload.originalFileName = req.file.originalname;
+        submissionPayload.mimeType = req.file.mimetype;
+        submissionPayload.fileSize = req.file.size;
+      }
+
+      team.submissions.push(submissionPayload);
     }
 
     await team.save();
-    res.json({ message: "Submission uploaded successfully" });
+    res.json({
+      message:
+        submissionType === "link"
+          ? "Submission link saved successfully"
+          : "Submission uploaded successfully",
+    });
   } catch (error) {
     next(error);
   }
@@ -223,9 +245,14 @@ exports.bulkDeleteSubmissions = async (req, res, next) => {
 // @desc Update portal (Admin)
 exports.updatePortal = async (req, res, next) => {
   try {
+    const updates = { ...req.body };
+    if (updates.submissionType !== undefined) {
+      updates.submissionType = normalizeSubmissionType(updates.submissionType);
+    }
+
     const portal = await SubmissionPortal.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updates,
       { new: true },
     );
     if (!portal) return res.status(404).json({ message: "Portal not found" });

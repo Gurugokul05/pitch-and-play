@@ -49,23 +49,37 @@ const envOrigins = envOriginsRaw
   .filter(Boolean);
 const corsOrigins = [...new Set([...defaultCorsOrigins, ...envOrigins])];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow tools or same-origin requests without an Origin header.
-      if (!origin) return callback(null, true);
+const isAllowedDevOrigin = (origin) => {
+  try {
+    const parsedOrigin = new URL(origin);
+    const isLocalHost = ["localhost", "127.0.0.1"].includes(
+      parsedOrigin.hostname,
+    );
+    return isLocalHost && /^\d+$/.test(parsedOrigin.port || "");
+  } catch {
+    return false;
+  }
+};
 
-      if (corsOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow tools or same-origin requests without an Origin header.
+    if (!origin) return callback(null, true);
 
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
+    if (corsOrigins.includes(origin) || isAllowedDevOrigin(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(cookieParser());
 
 // Database Connection with optimized settings

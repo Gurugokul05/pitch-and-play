@@ -11,6 +11,8 @@ import {
   FaDatabase,
   FaFileDownload,
   FaTrash,
+  FaFileUpload,
+  FaLink,
 } from "react-icons/fa";
 
 const AdminSubmissionManager = () => {
@@ -22,7 +24,10 @@ const AdminSubmissionManager = () => {
     title: "",
     description: "",
     deadline: "",
+    submissionType: "file",
   });
+
+  const formatSubmissionType = (t) => (t === "link" ? "LINK" : "FILE");
 
   const toPublicFileUrl = (rawUrl) => {
     if (!rawUrl) return null;
@@ -71,7 +76,12 @@ const AdminSubmissionManager = () => {
         background: "var(--bg-secondary)",
         color: "#fff",
       });
-      setNewPortal({ title: "", description: "", deadline: "" });
+      setNewPortal({
+        title: "",
+        description: "",
+        deadline: "",
+        submissionType: "file",
+      });
       fetchData();
     } catch (error) {
       Swal.fire({ icon: "error", title: "Activation Failed" });
@@ -99,9 +109,12 @@ const AdminSubmissionManager = () => {
       "Team ID",
       "Leader Name",
       "Leader Email",
+      "Leader College Name",
       "Portal Title",
+      "Submission Type",
       "Submission File",
       "Submitted At",
+      "File URL",
     ];
     const csvRows = [headers.join(",")];
 
@@ -112,9 +125,12 @@ const AdminSubmissionManager = () => {
           `"${team.teamId}"`,
           `"${team.leader.name}"`,
           `"${team.leader.email}"`,
+          `"${team.leader?.collegeName || "-"}"`,
           `"${sub.portalId?.title || "Unknown"}"`,
+          `"${formatSubmissionType(sub.portalId?.submissionType)}"`,
           `"${sub.originalFileName || sub.fileName || sub.link || "-"}"`,
           `"${new Date(sub.submittedAt).toLocaleString()}"`,
+          `"${toPublicFileUrl(sub.fileUrl || sub.link) || "-"}"`,
         ];
         csvRows.push(row.join(","));
       });
@@ -352,6 +368,47 @@ const AdminSubmissionManager = () => {
                 }
                 required
               />
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "0.5rem",
+                    color: "var(--text-secondary)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  SUBMISSION TYPE
+                </label>
+                <select
+                  value={
+                    editingPortal
+                      ? editingPortal.submissionType || "file"
+                      : newPortal.submissionType
+                  }
+                  onChange={(e) =>
+                    editingPortal
+                      ? setEditingPortal({
+                          ...editingPortal,
+                          submissionType: e.target.value,
+                        })
+                      : setNewPortal({
+                          ...newPortal,
+                          submissionType: e.target.value,
+                        })
+                  }
+                  style={{
+                    width: "100%",
+                    background: "rgba(0,0,0,0.25)",
+                    color: "#fff",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    padding: "0.85rem 1rem",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <option value="file">File Upload</option>
+                  <option value="link">Submission Link</option>
+                </select>
+              </div>
               {editingPortal && (
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "1rem" }}
@@ -449,6 +506,23 @@ const AdminSubmissionManager = () => {
                       >
                         DEADLINE: {new Date(p.deadline).toLocaleString()}
                       </span>
+                      <div
+                        style={{
+                          marginTop: "0.5rem",
+                          fontSize: "0.8rem",
+                          color: "var(--text-secondary)",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                        }}
+                      >
+                        {p.submissionType === "link" ? (
+                          <FaLink />
+                        ) : (
+                          <FaFileUpload />
+                        )}
+                        {formatSubmissionType(p.submissionType)} SUBMISSION
+                      </div>
                     </div>
                     <div
                       style={{
@@ -593,6 +667,11 @@ const AdminSubmissionManager = () => {
                   <th
                     style={{ padding: "1rem", color: "var(--text-secondary)" }}
                   >
+                    TYPE
+                  </th>
+                  <th
+                    style={{ padding: "1rem", color: "var(--text-secondary)" }}
+                  >
                     FILE
                   </th>
                   <th
@@ -641,6 +720,15 @@ const AdminSubmissionManager = () => {
                         style={{ padding: "1rem", color: "var(--accent-gold)" }}
                       >
                         {sub.portalId?.title || "Unknown Portal"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "1rem",
+                          color: "var(--text-secondary)",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        {formatSubmissionType(sub.portalId?.submissionType)}
                       </td>
                       <td style={{ padding: "1rem" }}>
                         {sub.fileUrl || sub.link ? (

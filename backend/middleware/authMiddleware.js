@@ -7,7 +7,17 @@ const buildError = (message, statusCode) => {
   return error;
 };
 
-exports.protect = (req, res, next) => {
+const normalizeAdminAuth = (admin) => {
+  if (!admin) return null;
+
+  return {
+    ...admin,
+    role: admin.role || "admin",
+    permissions: Array.isArray(admin.permissions) ? admin.permissions : [],
+  };
+};
+
+exports.protect = async (req, res, next) => {
   let token;
 
   if (
@@ -17,6 +27,14 @@ exports.protect = (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!decoded.role) {
+        const admin = normalizeAdminAuth(
+          await Admin.findById(decoded.id).select("role permissions").lean(),
+        );
+        if (admin) {
+          decoded.role = admin.role;
+        }
+      }
       req.user = decoded; // { id, role }
       return next();
     } catch (error) {
@@ -46,7 +64,9 @@ exports.adminOrPermission = (perm) => {
       }
 
       // Load admin user to check role and permissions
-      const admin = await Admin.findById(req.user.id).lean();
+      const admin = normalizeAdminAuth(
+        await Admin.findById(req.user.id).lean(),
+      );
       if (!admin) {
         return next(buildError("Forbidden", 403));
       }
@@ -81,7 +101,9 @@ exports.adminOrAnyPermission = (...perms) => {
       }
 
       // Load admin user to check role and permissions
-      const admin = await Admin.findById(req.user.id).lean();
+      const admin = normalizeAdminAuth(
+        await Admin.findById(req.user.id).lean(),
+      );
       if (!admin) {
         return next(buildError("Forbidden", 403));
       }

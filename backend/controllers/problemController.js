@@ -1,10 +1,20 @@
 const ProblemStatement = require("../models/ProblemStatement");
 const Team = require("../models/Team");
+const Settings = require("../models/Settings");
 
 // @desc Get all problem statements
 // @route GET /api/problems
 exports.getProblems = async (req, res, next) => {
   try {
+    const settings = await Settings.findOne().lean();
+    const isOpen = settings?.problemStatementsOpen !== false;
+
+    if (req.user?.role === "team" && !isOpen) {
+      return res
+        .status(403)
+        .json({ message: "Problem statement selection is currently closed." });
+    }
+
     const problems = await ProblemStatement.find({ visible: true });
     res.json(problems);
   } catch (error) {
@@ -47,6 +57,14 @@ exports.selectProblem = async (req, res, next) => {
   const teamId = req.user.id; // From auth middleware
 
   try {
+    const settings = await Settings.findOne().lean();
+    const isOpen = settings?.problemStatementsOpen !== false;
+    if (!isOpen) {
+      return res
+        .status(403)
+        .json({ message: "Problem statement selection is currently closed." });
+    }
+
     const team = await Team.findById(teamId);
     if (!team) {
       return res.status(404).json({ message: "Team not found" });

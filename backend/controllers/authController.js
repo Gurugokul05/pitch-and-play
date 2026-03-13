@@ -4,6 +4,16 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { sendRegistrationEmail } = require("../utils/emailService");
 
+const normalizeAdmin = (admin) => {
+  if (!admin) return null;
+
+  return {
+    ...admin,
+    role: admin.role || "admin",
+    permissions: Array.isArray(admin.permissions) ? admin.permissions : [],
+  };
+};
+
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "24h" });
 };
@@ -12,7 +22,7 @@ const generateTeamId = () => {
   const numeric = Math.floor(Math.random() * 10000)
     .toString()
     .padStart(4, "0");
-  return `pitch-${numeric}`;
+  return `PITCH-${numeric}`;
 };
 
 // @desc Register a new team
@@ -21,6 +31,25 @@ exports.registerTeam = async (req, res, next) => {
   const { teamName, leader, members } = req.body;
 
   try {
+    if (!teamName || !leader) {
+      return res.status(400).json({ message: "Team details are required." });
+    }
+
+    if (!leader.collegeName || !leader.collegeName.trim()) {
+      return res
+        .status(400)
+        .json({ message: "Leader college name is required." });
+    }
+
+    const hasMemberWithoutCollege = (members || []).some(
+      (member) => !member.collegeName || !member.collegeName.trim(),
+    );
+    if (hasMemberWithoutCollege) {
+      return res
+        .status(400)
+        .json({ message: "College name is required for all members." });
+    }
+
     // Validate emails (rudimentary check for duplicates across system could vary, for now just create)
     // Check if leader email is already used as leader?
     const existingLeader = await Team.findOne({ "leader.email": leader.email });
@@ -106,7 +135,10 @@ exports.loginAdmin = async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
-    const admin = await Admin.findOne({ username });
+    const adminDoc = await Admin.findOne({ username });
+    const admin = normalizeAdmin(
+      adminDoc?.toObject ? adminDoc.toObject() : adminDoc,
+    );
 
     if (admin && (await bcrypt.compare(password, admin.password))) {
       const token = generateToken(admin._id, admin.role);
@@ -140,9 +172,10 @@ exports.getMe = async (req, res, next) => {
       }
       return res.json({ user: team, role: "team" });
     } else if (req.user.role === "admin" || req.user.role === "staff") {
-      const admin = await Admin.findById(req.user.id)
+      const adminDoc = await Admin.findById(req.user.id)
         .select("-password")
         .lean();
+      const admin = normalizeAdmin(adminDoc);
       if (!admin) {
         return res.status(404).json({ message: "Admin not found" });
       }

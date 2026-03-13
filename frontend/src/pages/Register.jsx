@@ -26,6 +26,7 @@ const Register = () => {
       name: "",
       email: "",
       phone: "",
+      collegeName: "",
       registrationNumber: "",
       department: "",
       section: "",
@@ -48,6 +49,7 @@ const Register = () => {
             name: "",
             email: "",
             phone: "",
+            collegeName: "",
             registrationNumber: "",
             department: "",
             section: "",
@@ -89,6 +91,27 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const hasIncompleteMember = formData.members.some(
+      (member) =>
+        !member.name ||
+        !member.email ||
+        !member.phone ||
+        !member.collegeName ||
+        !member.registrationNumber ||
+        !member.department ||
+        !member.section ||
+        !member.year,
+    );
+
+    if (hasIncompleteMember) {
+      return Swal.fire({
+        icon: "error",
+        title: "Input Needed",
+        text: "Please fill all member details including college name.",
+      });
+    }
+
     setLoading(true);
     try {
       const res = await registerTeam(formData);
@@ -128,6 +151,7 @@ const Register = () => {
       (!formData.leader.name ||
         !formData.leader.email ||
         !formData.leader.phone ||
+        !formData.leader.collegeName ||
         !formData.leader.registrationNumber ||
         !formData.leader.department ||
         !formData.leader.section ||
@@ -386,6 +410,20 @@ const Register = () => {
                         placeholder="Enter registration number"
                       />
                       <Input
+                        label="College Name"
+                        value={formData.leader.collegeName}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            leader: {
+                              ...formData.leader,
+                              collegeName: e.target.value,
+                            },
+                          })
+                        }
+                        placeholder="Enter college name"
+                      />
+                      <Input
                         label="Department"
                         value={formData.leader.department}
                         onChange={(e) =>
@@ -570,6 +608,13 @@ const Register = () => {
                                 "registrationNumber",
                                 e.target.value,
                               )
+                            }
+                          />
+                          <Input
+                            placeholder="College name"
+                            value={member.collegeName}
+                            onChange={(e) =>
+                              updateMember(idx, "collegeName", e.target.value)
                             }
                           />
                           <Input

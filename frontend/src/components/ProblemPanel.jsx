@@ -7,13 +7,24 @@ import { FaLock, FaUnlock } from "react-icons/fa";
 
 const ProblemPanel = ({ team, onProblemSelected }) => {
   const [problems, setProblems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchProblems = async () => {
       try {
         const res = await api.get("/problems");
         setProblems(res.data);
-      } catch (error) {}
+        setErrorMessage("");
+      } catch (error) {
+        setProblems([]);
+        setErrorMessage(
+          error.response?.data?.message ||
+            "Unable to load problem statements right now.",
+        );
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProblems();
   }, []);
@@ -157,8 +168,27 @@ const ProblemPanel = ({ team, onProblemSelected }) => {
 
   return (
     <Card title="Select Mission Objective">
-      {problems.length === 0 ? (
+      {loading ? (
         <p>Loading available missions...</p>
+      ) : errorMessage ? (
+        <div
+          style={{
+            padding: "1.2rem",
+            borderRadius: "8px",
+            border: "1px solid rgba(244,67,54,0.35)",
+            background: "rgba(244,67,54,0.08)",
+            color: "var(--accent-danger)",
+          }}
+        >
+          <p style={{ margin: 0, fontWeight: 700 }}>
+            Problem Statements Closed
+          </p>
+          <p style={{ margin: "0.5rem 0 0 0", color: "var(--text-muted)" }}>
+            {errorMessage}
+          </p>
+        </div>
+      ) : problems.length === 0 ? (
+        <p>No visible problem statements available.</p>
       ) : (
         <div style={{ display: "grid", gap: "1.5rem" }}>
           {problems.map((problem) => (

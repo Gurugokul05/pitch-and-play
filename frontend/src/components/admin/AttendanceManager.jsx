@@ -238,6 +238,7 @@ const AttendanceManager = ({ user }) => {
       "Member Name",
       "Email",
       "Registration Number",
+      "College Name",
     ];
 
     // Add round headers
@@ -261,6 +262,7 @@ const AttendanceManager = ({ user }) => {
         team.leader?.name || "-",
         team.leader?.email || "-",
         team.leader?.registrationNumber || "-",
+        team.leader?.collegeName || "-",
       ];
 
       // Add round statuses
@@ -280,6 +282,7 @@ const AttendanceManager = ({ user }) => {
           member.name || "-",
           member.email || "-",
           member.registrationNumber || "-",
+          member.collegeName || "-",
         ];
 
         // Add round statuses
