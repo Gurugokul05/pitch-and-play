@@ -90,8 +90,8 @@ exports.registerTeam = async (req, res, next) => {
       password: hashedPassword, // storing hashed email as password placeholder
     });
 
-    // Send registration confirmation email (best effort)
-    await sendRegistrationEmail(leader.email, teamName, teamId);
+    // Send registration confirmation email (fire-and-forget, best effort)
+    sendRegistrationEmail(leader.email, teamName, teamId);
 
     res.status(201).json({
       teamId: team.teamId,

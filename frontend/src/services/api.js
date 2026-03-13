@@ -15,7 +15,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 30000, // 30 second timeout for slow connections
+  timeout: 60000, // 60 second timeout to handle cold starts on Render free tier
 });
 
 // Request cache for GET requests
