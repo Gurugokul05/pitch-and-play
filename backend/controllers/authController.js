@@ -1,5 +1,6 @@
 const Team = require("../models/Team");
 const Admin = require("../models/Admin");
+const Settings = require("../models/Settings");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { sendRegistrationEmail } = require("../utils/emailService");
@@ -31,6 +32,14 @@ exports.registerTeam = async (req, res, next) => {
   const { teamName, leader, members } = req.body;
 
   try {
+    const settings = await Settings.findOne().lean();
+    const isRegistrationOpen = settings?.registrationOpen !== false;
+    if (!isRegistrationOpen) {
+      return res.status(403).json({
+        message: "Registration portal is currently closed by admin.",
+      });
+    }
+
     if (!teamName || !leader) {
       return res.status(400).json({ message: "Team details are required." });
     }

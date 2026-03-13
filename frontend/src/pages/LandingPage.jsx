@@ -22,7 +22,7 @@ import {
 
 const LandingPage = () => {
   React.useEffect(() => {
-    document.title = "PIXELIT - AI Hackathon";
+    document.title = "Pitch and Play - Pitch Challenge";
   }, []);
 
   return (
@@ -74,7 +74,8 @@ const LandingPage = () => {
               padding: "0 1rem",
             }}
           >
-            Build Intelligent Solutions. Innovate with AI. Shape the Future.
+            Pitch and Play is a high-intensity pitch challenge where teams craft
+            ideas and deliver persuasive final pitches.
           </p>
           <div
             style={{
@@ -110,13 +111,13 @@ const LandingPage = () => {
                   color: "var(--accent-cyan)",
                 }}
               >
-                Join The Challenge
+                Join The Pitch Challenge
               </Button>
             </Link>
           </div>
         </motion.div>
 
-        {/* Background Decor - AI theme */}
+        {/* Background Decor */}
         <div
           style={{
             position: "absolute",
@@ -206,16 +207,10 @@ const LandingPage = () => {
                 }}
               >
                 <li style={{ marginBottom: "0.5rem" }}>
-                  <strong>09:00</strong> - Opening Ceremony
+                  <strong>09:00 - 12:00</strong> - 1st Round
                 </li>
                 <li style={{ marginBottom: "0.5rem" }}>
-                  <strong>10:00</strong> - Hackathon Begins
-                </li>
-                <li style={{ marginBottom: "0.5rem" }}>
-                  <strong>18:00</strong> - Round 1 Evaluation
-                </li>
-                <li style={{ marginBottom: "0.5rem" }}>
-                  <strong>09:00 (+1)</strong> - Final Pitches
+                  <strong>13:00 - 16:30</strong> - 2nd Round
                 </li>
               </ul>
             </Card>
@@ -233,12 +228,11 @@ const LandingPage = () => {
                 color="var(--accent-violet)"
                 style={{ marginBottom: "1rem" }}
               />
-              <h3>Themes</h3>
+              <h3>Pitch Format</h3>
               <p style={{ marginTop: "1rem", color: "var(--text-muted)" }}>
-                Explore <strong>Machine Learning</strong>,{" "}
-                <strong>Natural Language Processing</strong>, and{" "}
-                <strong>Computer Vision</strong>. Build intelligent AI solutions
-                with cutting-edge technology.
+                Every team must define a clear problem, present a practical
+                solution, showcase value, and defend feasibility in front of
+                judges.
               </p>
             </Card>
           </motion.div>
@@ -260,14 +254,14 @@ const LandingPage = () => {
                 <span
                   style={{ color: "var(--accent-cyan)", fontWeight: "bold" }}
                 >
-                  Amazing Prizes!
+                  Prize Pool
                 </span>{" "}
                 <br />
-                Tech Gear & Cloud Credits for Winners
+                1st Prize - 3k
                 <br />
-                Certificates for all participants
+                2nd Prize - 2k
                 <br />
-                Exclusive PIXELIT Merch
+                3rd Prize - 1k
               </p>
             </Card>
           </motion.div>
@@ -289,8 +283,7 @@ const LandingPage = () => {
             fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
           }}
         >
-          Competition{" "}
-          <span style={{ color: "var(--accent-cyan)" }}>Tracks</span>
+          Pitch <span style={{ color: "var(--accent-cyan)" }}>Tracks</span>
         </h2>
         <div
           style={{
@@ -304,24 +297,24 @@ const LandingPage = () => {
         >
           {[
             {
-              title: "Machine Learning",
+              title: "Campus Innovation",
               icon: <FaRobot />,
-              desc: "Build intelligent systems using TensorFlow, PyTorch, and scikit-learn.",
+              desc: "Present practical solutions for student life, campus systems, and learning experience.",
             },
             {
-              title: "Computer Vision",
+              title: "Product & Market Fit",
               icon: <FaEye />,
-              desc: "Create AI-powered image and video analysis applications.",
+              desc: "Build clear value propositions and demonstrate why your idea wins in the real market.",
             },
             {
-              title: "Natural Language Processing",
+              title: "Execution Blueprint",
               icon: <FaNetworkWired />,
-              desc: "Develop smart text analysis, chatbots, and language understanding systems.",
+              desc: "Show implementation plan, go-to-market steps, and measurable milestones.",
             },
             {
-              title: "Data Science & Analytics",
+              title: "Growth & Impact",
               icon: <FaChartLine />,
-              desc: "Extract insights from data using advanced analytics and visualization.",
+              desc: "Highlight traction potential, scalability, and long-term impact of your pitch.",
             },
           ].map((track, i) => (
             <motion.div
@@ -392,86 +385,11 @@ const LandingPage = () => {
                 padding: "0 1rem",
               }}
             >
-              Organized by the <strong>PIXELIT Club</strong> — a club created by
-              students and for students. We are a student-led community of AI
-              enthusiasts, developers, and innovators building intelligent
-              solutions and pushing the boundaries of artificial intelligence.
+              Organized by the <strong>PIXELIT Team</strong> — a student-led
+              initiative built for builders and presenters. We mentor teams to
+              sharpen storytelling, validate ideas, and deliver investor-style
+              pitches with confidence.
             </p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
-                gap: "clamp(1rem, 3vw, 2rem)",
-                justifyContent: "center",
-                width: "100%",
-                maxWidth: "600px",
-              }}
-            >
-              <div
-                style={{
-                  padding: "clamp(1.5rem, 3vw, 2rem)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "var(--radius-md)",
-                  background: "rgba(102, 252, 241, 0.05)",
-                }}
-              >
-                <h1
-                  style={{
-                    color: "var(--accent-cyan)",
-                    margin: 0,
-                    fontSize: "clamp(2rem, 5vw, 3rem)",
-                  }}
-                >
-                  500+
-                </h1>
-                <p style={{ margin: 0, fontSize: "clamp(0.9rem, 2vw, 1rem)" }}>
-                  Participants
-                </p>
-              </div>
-              <div
-                style={{
-                  padding: "clamp(1.5rem, 3vw, 2rem)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "var(--radius-md)",
-                  background: "rgba(167, 139, 250, 0.05)",
-                }}
-              >
-                <h1
-                  style={{
-                    color: "var(--accent-violet)",
-                    margin: 0,
-                    fontSize: "clamp(2rem, 5vw, 3rem)",
-                  }}
-                >
-                  24H
-                </h1>
-                <p style={{ margin: 0, fontSize: "clamp(0.9rem, 2vw, 1rem)" }}>
-                  Non-stop Coding
-                </p>
-              </div>
-              <div
-                style={{
-                  padding: "clamp(1.5rem, 3vw, 2rem)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "var(--radius-md)",
-                  background: "rgba(69, 162, 158, 0.05)",
-                }}
-              >
-                <h1
-                  style={{
-                    color: "var(--accent-cyan)",
-                    margin: 0,
-                    fontSize: "clamp(2rem, 5vw, 3rem)",
-                  }}
-                >
-                  50+
-                </h1>
-                <p style={{ margin: 0, fontSize: "clamp(0.9rem, 2vw, 1rem)" }}>
-                  Projects
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -487,7 +405,7 @@ const LandingPage = () => {
         }}
       >
         <p style={{ color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-          &copy; 2026 PIXELIT Hackathon Platform. All Systems Operational.
+          &copy; 2026 Pitch and Play Platform. All Systems Operational.
         </p>
         <p
           style={{

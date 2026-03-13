@@ -236,6 +236,21 @@ const ProblemPanel = ({ team, onProblemSelected }) => {
               </div>
               <p
                 style={{
+                  fontSize: "0.8rem",
+                  marginBottom: "0.7rem",
+                  color: problem.isFull
+                    ? "var(--accent-danger)"
+                    : "var(--accent-cyan)",
+                  fontWeight: 700,
+                  letterSpacing: "0.5px",
+                }}
+              >
+                {problem.isFull
+                  ? "Slots: FULL (5/5 teams selected)"
+                  : `Slots: ${problem.slotsRemaining ?? "-"} remaining (${problem.selectionCount ?? 0}/${problem.maxTeams ?? 5})`}
+              </p>
+              <p
+                style={{
                   fontSize: "0.9rem",
                   color: "var(--accent-red)",
                   marginBottom: "0.5rem",
@@ -256,6 +271,7 @@ const ProblemPanel = ({ team, onProblemSelected }) => {
               </p>
               <Button
                 onClick={() => handleSelect(problem._id)}
+                disabled={problem.isFull}
                 variant="primary"
                 style={{
                   width: "100%",
@@ -265,7 +281,8 @@ const ProblemPanel = ({ team, onProblemSelected }) => {
                   gap: "0.5rem",
                 }}
               >
-                <FaUnlock size={14} /> Lock In Objective
+                <FaUnlock size={14} />
+                {problem.isFull ? " Objective Full" : " Lock In Objective"}
               </Button>
             </div>
           ))}

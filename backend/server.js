@@ -12,6 +12,33 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.disable("x-powered-by");
+app.set("trust proxy", 1);
+
+const parseEnvInt = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const apiRateLimitWindowMs = parseEnvInt(
+  process.env.API_RATE_LIMIT_WINDOW_MS,
+  15 * 60 * 1000,
+);
+const apiRateLimitMax = parseEnvInt(process.env.API_RATE_LIMIT_MAX, 5000);
+const authRateLimitWindowMs = parseEnvInt(
+  process.env.AUTH_RATE_LIMIT_WINDOW_MS,
+  15 * 60 * 1000,
+);
+const authRateLimitMax = parseEnvInt(process.env.AUTH_RATE_LIMIT_MAX, 300);
+
+const mongoMaxPoolSize = parseEnvInt(process.env.MONGO_MAX_POOL_SIZE, 100);
+const mongoMinPoolSize = parseEnvInt(process.env.MONGO_MIN_POOL_SIZE, 20);
+const keepAliveTimeoutMs = parseEnvInt(
+  process.env.KEEP_ALIVE_TIMEOUT_MS,
+  65000,
+);
+const headersTimeoutMs = parseEnvInt(process.env.HEADERS_TIMEOUT_MS, 66000);
+const requestTimeoutMs = parseEnvInt(process.env.REQUEST_TIMEOUT_MS, 120000);
 
 // Security Middleware
 app.use(helmet());
@@ -21,17 +48,19 @@ app.use(compression());
 
 // Rate Limiting - Prevent abuse
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: apiRateLimitWindowMs,
+  max: apiRateLimitMax,
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20, // More strict for auth endpoints
+  windowMs: authRateLimitWindowMs,
+  max: authRateLimitMax,
   skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 app.use("/api/", limiter);
@@ -86,16 +115,26 @@ app.use(cookieParser());
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
-      maxPoolSize: 50, // Increase connection pool for 300 users
-      minPoolSize: 10,
+      maxPoolSize: mongoMaxPoolSize,
+      minPoolSize: mongoMinPoolSize,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
     console.log("✓ MongoDB Connected Successfully");
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`✓ Server is running on port ${PORT}`);
       console.log(`✓ CORS Origins: ${corsOrigins.join(", ")}`);
+      console.log(
+        `✓ Rate Limits: api=${apiRateLimitMax}/${apiRateLimitWindowMs}ms, auth=${authRateLimitMax}/${authRateLimitWindowMs}ms`,
+      );
+      console.log(
+        `✓ Mongo Pool: min=${mongoMinPoolSize}, max=${mongoMaxPoolSize}`,
+      );
     });
+
+    server.keepAliveTimeout = keepAliveTimeoutMs;
+    server.headersTimeout = headersTimeoutMs;
+    server.requestTimeout = requestTimeoutMs;
   } catch (error) {
     console.error("✗ Failed to start server:");
     console.error(error.message);

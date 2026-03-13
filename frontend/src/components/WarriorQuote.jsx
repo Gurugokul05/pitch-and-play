@@ -7,7 +7,7 @@ const QUOTES = [
   },
   {
     text: "Strength is the patience to wait for the right fight.",
-    author: "Old warrior",
+    author: "Team mentor",
   },
   {
     text: "Victory is earned before the battle begins.",
@@ -19,7 +19,7 @@ const QUOTES = [
   },
 ];
 
-const WarriorQuote = React.memo(() => {
+const MotivationQuote = React.memo(() => {
   // Memoize the random quote selection to prevent unnecessary re-renders
   const quote = useMemo(() => {
     const index = Math.floor(Math.random() * QUOTES.length);
@@ -63,6 +63,6 @@ const WarriorQuote = React.memo(() => {
   );
 });
 
-WarriorQuote.displayName = "WarriorQuote";
+MotivationQuote.displayName = "MotivationQuote";
 
-export default WarriorQuote;
+export default MotivationQuote;

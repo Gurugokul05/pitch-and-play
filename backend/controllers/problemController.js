@@ -2,6 +2,8 @@ const ProblemStatement = require("../models/ProblemStatement");
 const Team = require("../models/Team");
 const Settings = require("../models/Settings");
 
+const MAX_TEAMS_PER_PROBLEM = 5;
+
 // @desc Get all problem statements
 // @route GET /api/problems
 exports.getProblems = async (req, res, next) => {
@@ -15,8 +17,39 @@ exports.getProblems = async (req, res, next) => {
         .json({ message: "Problem statement selection is currently closed." });
     }
 
-    const problems = await ProblemStatement.find({ visible: true });
-    res.json(problems);
+    const problems = await ProblemStatement.find({ visible: true }).lean();
+    const problemIds = problems.map((problem) => problem._id);
+
+    let selectionCountsByProblemId = new Map();
+    if (problemIds.length > 0) {
+      const selectionCounts = await Team.aggregate([
+        { $match: { problemStatement: { $in: problemIds } } },
+        { $group: { _id: "$problemStatement", count: { $sum: 1 } } },
+      ]);
+
+      selectionCountsByProblemId = new Map(
+        selectionCounts.map((item) => [String(item._id), item.count]),
+      );
+    }
+
+    const enrichedProblems = problems.map((problem) => {
+      const selectionCount =
+        selectionCountsByProblemId.get(String(problem._id)) || 0;
+      const slotsRemaining = Math.max(
+        MAX_TEAMS_PER_PROBLEM - selectionCount,
+        0,
+      );
+
+      return {
+        ...problem,
+        maxTeams: MAX_TEAMS_PER_PROBLEM,
+        selectionCount,
+        slotsRemaining,
+        isFull: slotsRemaining === 0,
+      };
+    });
+
+    res.json(enrichedProblems);
   } catch (error) {
     next(error);
   }
@@ -79,6 +112,15 @@ exports.selectProblem = async (req, res, next) => {
     const problem = await ProblemStatement.findById(problemId);
     if (!problem) {
       return res.status(404).json({ message: "Problem not found" });
+    }
+
+    const selectedTeamCount = await Team.countDocuments({
+      problemStatement: problemId,
+    });
+    if (selectedTeamCount >= MAX_TEAMS_PER_PROBLEM) {
+      return res.status(400).json({
+        message: `This problem statement has reached its limit of ${MAX_TEAMS_PER_PROBLEM} teams.`,
+      });
     }
 
     team.problemStatement = problemId;

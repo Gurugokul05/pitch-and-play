@@ -16,7 +16,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
-    document.title = "Warrior Portal - Vinland Saga Challenge";
+    document.title = "Team Login - Pitch and Play";
   }, []);
 
   const handleChange = (e) =>
@@ -90,7 +90,7 @@ const Login = () => {
               margin: 0,
             }}
           >
-            WARRIOR SUMMONS
+            TEAM LOGIN
           </h1>
           <p
             style={{
@@ -138,7 +138,7 @@ const Login = () => {
                 name="teamId"
                 value={formData.teamId}
                 onChange={handleChange}
-                placeholder="E.G. HACK26-XXXXX"
+                placeholder="E.G. PITCH-XXXXX"
                 required
                 style={{
                   padding: "1.2rem",
